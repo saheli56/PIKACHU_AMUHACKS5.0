@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { RotateCcw, Share2 } from "lucide-react";
+import { RotateCcw, Share2, Sparkles } from "lucide-react";
 import { useSimulation } from "@/context/SimulationContext";
 import { determineProfile } from "@/lib/profiles";
 import ProfileCard from "@/components/ProfileCard";
@@ -12,6 +12,7 @@ import InsightSection from "@/components/InsightSection";
 import JourneyTimeline from "@/components/JourneyTimeline";
 import MetricsPanel from "@/components/MetricsPanel";
 import ParticleBackground from "@/components/ParticleBackground";
+import ShareModal from "@/components/ShareModal";
 import confetti from "canvas-confetti";
 
 export default function ResultsPage() {
@@ -36,6 +37,8 @@ export default function ResultsPage() {
     }, 800);
     return () => clearTimeout(timer);
   }, []);
+
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const handleRestart = () => {
     resetSimulation();
@@ -166,32 +169,20 @@ export default function ResultsPage() {
         >
           {/* Share section */}
           <div className="w-full rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 p-6 text-center">
-            <Share2 className="mx-auto mb-2 h-5 w-5 text-indigo-400" />
+            <Sparkles className="mx-auto mb-2 h-5 w-5 text-indigo-400" />
             <p className="mb-1 text-sm font-semibold text-stone-800">
-              Share Your Profile
+              Share Your Civic Profile
             </p>
             <p className="mb-4 text-xs text-stone-500">
-              Let others discover their civic archetype too
+              Download a stunning card or share it with friends
             </p>
             <div className="flex justify-center gap-2">
               <button
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({
-                      title: `I'm "${profile.title}" - Civic Mirror`,
-                      text: `I just discovered my civic profile: ${profile.title}. Take the Civic Mirror simulation to discover yours!`,
-                      url: window.location.origin,
-                    });
-                  } else {
-                    navigator.clipboard.writeText(
-                      `I'm "${profile.title}" on Civic Mirror! Discover your civic profile: ${window.location.origin}`
-                    );
-                  }
-                }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-500 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 hover:shadow-xl active:scale-[0.97] cursor-pointer"
+                onClick={() => setShowShareModal(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:from-indigo-600 hover:to-purple-600 active:scale-[0.97] cursor-pointer"
               >
                 <Share2 className="h-3.5 w-3.5" />
-                Share Result
+                Generate Share Card
               </button>
             </div>
           </div>
@@ -206,6 +197,16 @@ export default function ResultsPage() {
           </button>
         </motion.div>
       </div>
+
+      {/* Share modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        profile={profile}
+        metrics={metrics}
+        worldState={worldState}
+        choiceCount={choiceHistory.length}
+      />
     </div>
   );
 }
