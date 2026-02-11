@@ -25,11 +25,31 @@ export interface Choice {
   id: string;
   text: string;
   impact: ChoiceImpact;
+  consequence: string;
 }
 
 export interface Scenario {
   id: string;
   title: string;
   description: string;
+  context: string;
   choices: Choice[];
+}
+
+export interface ChoiceRecord {
+  scenarioId: string;
+  scenarioTitle: string;
+  choiceId: string;
+  choiceText: string;
+  consequence: string;
+  impact: ChoiceImpact;
+}
+
+export interface CivicProfile {
+  archetype: string;
+  title: string;
+  description: string;
+  strengths: string[];
+  improvements: string[];
+  criticalInsights: string[];
 }

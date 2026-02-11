@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Civic Mirror",
-  description: "A decision-based civic simulation",
+  title: "Civic Mirror — See The Impact of Your Choices",
+  description:
+    "An interactive civic simulation where everyday decisions shape empathy, trust, and community. Make choices. See the impact. Know yourself.",
 };
 
 export default function RootLayout({

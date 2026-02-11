@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { Metrics, WorldState, ChoiceImpact } from "@/lib/types";
+import { Metrics, WorldState, ChoiceImpact, ChoiceRecord } from "@/lib/types";
 import { applyImpact } from "@/lib/simulationEngine";
 import { scenarios } from "@/lib/scenarios";
 
@@ -15,8 +15,9 @@ interface SimulationState {
   currentScenarioIndex: number;
   metrics: Metrics;
   worldState: WorldState;
+  choiceHistory: ChoiceRecord[];
   isComplete: boolean;
-  handleChoice: (choiceImpact: ChoiceImpact) => void;
+  handleChoice: (choiceId: string, choiceText: string, choiceImpact: ChoiceImpact, consequence: string) => void;
   goToNextScenario: () => void;
   resetSimulation: () => void;
 }
@@ -40,15 +41,29 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [metrics, setMetrics] = useState<Metrics>(initialMetrics);
   const [worldState, setWorldState] = useState<WorldState>(initialWorldState);
+  const [choiceHistory, setChoiceHistory] = useState<ChoiceRecord[]>([]);
   const [isComplete, setIsComplete] = useState(false);
 
   const handleChoice = useCallback(
-    (choiceImpact: ChoiceImpact) => {
+    (choiceId: string, choiceText: string, choiceImpact: ChoiceImpact, consequence: string) => {
       const result = applyImpact(metrics, worldState, choiceImpact);
       setMetrics(result.metrics);
       setWorldState(result.worldState);
+
+      const scenario = scenarios[currentScenarioIndex];
+      setChoiceHistory((prev) => [
+        ...prev,
+        {
+          scenarioId: scenario.id,
+          scenarioTitle: scenario.title,
+          choiceId,
+          choiceText,
+          consequence,
+          impact: choiceImpact,
+        },
+      ]);
     },
-    [metrics, worldState]
+    [metrics, worldState, currentScenarioIndex]
   );
 
   const goToNextScenario = useCallback(() => {
@@ -65,6 +80,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     setCurrentScenarioIndex(0);
     setMetrics(initialMetrics);
     setWorldState(initialWorldState);
+    setChoiceHistory([]);
     setIsComplete(false);
   }, []);
 
@@ -74,6 +90,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
         currentScenarioIndex,
         metrics,
         worldState,
+        choiceHistory,
         isComplete,
         handleChoice,
         goToNextScenario,
