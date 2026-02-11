@@ -7,881 +7,1005 @@ interface SceneIllustrationProps {
     className?: string;
 }
 
-/* ─────────────────────────────────────────────
-   Shared SVG building blocks
-   ───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   SHARED HIGH-FIDELITY CHARACTER SYSTEM
+   ══════════════════════════════════════════════ */
 
-// Simple stick-figure person
-function Person({
-    x,
-    y,
-    fill = "#78716c",
-    scale = 1,
-    delay = 0,
-    animate,
+/** Flat-art person with torso, head with hair, proper limbs */
+function FlatPerson({
+    x, y, shirtColor = "#64748b", hairColor = "#44403c",
+    skinColor = "#f5d0b0", pantsColor = "#334155",
+    scale = 1, delay = 0, facing = 1,
+    armPose = "down", label, labelColor,
 }: {
-    x: number;
-    y: number;
-    fill?: string;
-    scale?: number;
-    delay?: number;
-    animate?: Record<string, unknown>;
+    x: number; y: number; shirtColor?: string; hairColor?: string;
+    skinColor?: string; pantsColor?: string;
+    scale?: number; delay?: number; facing?: 1 | -1;
+    armPose?: "down" | "up" | "hold" | "hips";
+    label?: string; labelColor?: string;
 }) {
     return (
-        <motion.g
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0, ...animate }}
-            transition={{ delay, duration: 0.5 }}
-            transform={`translate(${x}, ${y}) scale(${scale})`}
-        >
-            {/* Head */}
-            <circle cx="0" cy="-16" r="5" fill={fill} />
-            {/* Body */}
-            <line x1="0" y1="-11" x2="0" y2="2" stroke={fill} strokeWidth="2.5" strokeLinecap="round" />
-            {/* Arms */}
-            <line x1="-7" y1="-6" x2="7" y2="-6" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-            {/* Legs */}
-            <line x1="0" y1="2" x2="-5" y2="12" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-            <line x1="0" y1="2" x2="5" y2="12" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-        </motion.g>
-    );
-}
-
-// Elder person with walking stick
-function ElderPerson({
-    x,
-    y,
-    fill = "#78716c",
-    delay = 0,
-}: {
-    x: number;
-    y: number;
-    fill?: string;
-    delay?: number;
-}) {
-    return (
-        <motion.g
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay, duration: 0.6 }}
-            transform={`translate(${x}, ${y})`}
-        >
-            {/* Head */}
-            <circle cx="0" cy="-16" r="5" fill={fill} />
-            {/* Hair hint */}
-            <path d="M-4,-19 Q0,-22 4,-19" stroke="#d6d3d1" strokeWidth="1.5" fill="none" />
-            {/* Body - slightly hunched */}
-            <path d="M0,-11 Q2,-4 1,2" stroke={fill} strokeWidth="2.5" fill="none" strokeLinecap="round" />
-            {/* Arms */}
-            <line x1="-6" y1="-7" x2="6" y2="-5" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-            {/* Walking stick */}
-            <motion.line
-                x1="8" y1="-5" x2="10" y2="14"
-                stroke="#a8a29e" strokeWidth="2" strokeLinecap="round"
-            />
-            {/* Legs */}
-            <line x1="1" y1="2" x2="-3" y2="12" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-            <line x1="1" y1="2" x2="5" y2="12" stroke={fill} strokeWidth="2" strokeLinecap="round" />
-        </motion.g>
-    );
-}
-
-/* ─────────────────────────────────────────────
-   Scene 1: Railway Queue
-   ───────────────────────────────────────────── */
-function QueueRailwayScene() {
-    return (
-        <svg viewBox="0 0 400 180" className="w-full h-full">
-            {/* Sky / background */}
-            <rect width="400" height="180" fill="url(#railway-sky)" rx="0" />
-            <defs>
-                <linearGradient id="railway-sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#fef3c7" />
-                    <stop offset="100%" stopColor="#fffbeb" />
-                </linearGradient>
-            </defs>
-
-            {/* Station platform */}
-            <rect x="0" y="140" width="400" height="40" fill="#e7e5e4" />
-            <rect x="0" y="138" width="400" height="4" fill="#d6d3d1" />
-
-            {/* Ticket counter */}
+        <g transform={`translate(${x}, ${y}) scale(${scale * facing}, ${scale})`}>
             <motion.g
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                transition={{ delay, duration: 0.5, ease: "easeOut" }}
             >
-                <rect x="20" y="80" width="50" height="60" rx="4" fill="#a8a29e" />
-                <rect x="25" y="85" width="40" height="25" rx="2" fill="#78716c" />
-                <text x="45" y="102" textAnchor="middle" fill="#fafaf9" fontSize="7" fontWeight="600">TICKETS</text>
-                {/* Counter person */}
-                <circle cx="45" cy="120" r="5" fill="#57534e" />
-                <rect x="39" y="125" width="12" height="8" rx="2" fill="#57534e" />
+                {/* Shadow on ground */}
+                <ellipse cx="0" cy="24" rx="8" ry="2.5" fill="#00000015" />
+
+                {/* Legs */}
+                <path d={`M-3,10 L-4,22`} stroke={pantsColor} strokeWidth="3.5" strokeLinecap="round" />
+                <path d={`M3,10 L4,22`} stroke={pantsColor} strokeWidth="3.5" strokeLinecap="round" />
+                {/* Shoes */}
+                <ellipse cx="-4" cy="23" rx="3" ry="1.5" fill="#292524" />
+                <ellipse cx="4" cy="23" rx="3" ry="1.5" fill="#292524" />
+
+                {/* Torso */}
+                <path d="M-7,-6 Q-8,-10 -5,-12 L5,-12 Q8,-10 7,-6 L6,11 L-6,11 Z"
+                    fill={shirtColor} />
+
+                {/* Arms */}
+                {armPose === "down" && (
+                    <>
+                        <path d="M-7,-8 L-10,6" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                        <path d="M7,-8 L10,6" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                    </>
+                )}
+                {armPose === "up" && (
+                    <>
+                        <path d="M-7,-8 L-12,-16" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                        <path d="M7,-8 L12,-16" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                    </>
+                )}
+                {armPose === "hold" && (
+                    <>
+                        <path d="M-7,-8 L-10,0" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                        <path d="M7,-8 L12,-4" stroke={skinColor} strokeWidth="3" strokeLinecap="round" />
+                    </>
+                )}
+                {armPose === "hips" && (
+                    <>
+                        <path d="M-7,-6 L-11,2 L-7,4" stroke={skinColor} strokeWidth="3" strokeLinecap="round" fill="none" />
+                        <path d="M7,-6 L11,2 L7,4" stroke={skinColor} strokeWidth="3" strokeLinecap="round" fill="none" />
+                    </>
+                )}
+
+                {/* Neck */}
+                <rect x="-2" y="-14" width="4" height="3" rx="1" fill={skinColor} />
+
+                {/* Head */}
+                <circle cx="0" cy="-20" r="7" fill={skinColor} />
+
+                {/* Hair */}
+                <path d="M-7,-22 Q-7,-28 0,-28 Q7,-28 7,-22 Q7,-19 5,-18 L-5,-18 Q-7,-19 -7,-22 Z"
+                    fill={hairColor} />
+
+                {/* Eyes */}
+                <circle cx="-2.5" cy="-21" r="1" fill="#1e293b" />
+                <circle cx="2.5" cy="-21" r="1" fill="#1e293b" />
+
+                {/* Label */}
+                {label && (
+                    <text x="0" y="-34" textAnchor="middle" fill={labelColor || shirtColor}
+                        fontSize="6" fontWeight="700" letterSpacing="0.05em">{label}</text>
+                )}
             </motion.g>
+        </g>
+    );
+}
 
-            {/* Queue of people - staggered entrance */}
-            <Person x={90} y={128} fill="#6366f1" delay={0.2} />
-            <Person x={115} y={128} fill="#78716c" delay={0.3} />
-            <Person x={140} y={128} fill="#57534e" delay={0.4} />
-            <Person x={165} y={128} fill="#78716c" delay={0.5} />
-            <Person x={190} y={128} fill="#a8a29e" delay={0.6} />
-            <Person x={215} y={128} fill="#57534e" delay={0.7} />
-
-            {/* The "you" person further back */}
-            <Person x={260} y={128} fill="#4f46e5" delay={0.9} scale={1.1} />
-
-            {/* Waving person at front */}
+/** Elder person — hunched, grey hair, walking stick */
+function FlatElder({
+    x, y, shirtColor = "#a16207", scale = 1, delay = 0, facing = 1,
+}: {
+    x: number; y: number; shirtColor?: string;
+    scale?: number; delay?: number; facing?: 1 | -1;
+}) {
+    return (
+        <g transform={`translate(${x}, ${y}) scale(${scale * facing}, ${scale})`}>
             <motion.g
-                transform="translate(93, 108)"
-                animate={{ rotate: [-10, 10, -10] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay, duration: 0.6, ease: "easeOut" }}
             >
-                <line x1="0" y1="0" x2="-8" y2="-10" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" />
+                <ellipse cx="0" cy="24" rx="7" ry="2" fill="#00000012" />
+                {/* Legs */}
+                <path d="M-3,10 L-3,22" stroke="#57534e" strokeWidth="3" strokeLinecap="round" />
+                <path d="M3,10 L5,22" stroke="#57534e" strokeWidth="3" strokeLinecap="round" />
+                <ellipse cx="-3" cy="23" rx="3" ry="1.5" fill="#292524" />
+                <ellipse cx="5" cy="23" rx="3" ry="1.5" fill="#292524" />
+                {/* Walking stick */}
+                <line x1="12" y1="-2" x2="14" y2="22" stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Torso — slightly hunched forward */}
+                <path d="M-6,-6 L-4,-12 L5,-11 L7,-4 L5,11 L-5,11 Z" fill={shirtColor} />
+                {/* Arms */}
+                <path d="M-6,-6 L-9,4" stroke="#f5d0b0" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M7,-5 L12,-2" stroke="#f5d0b0" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Neck */}
+                <rect x="-2" y="-14" width="4" height="3" rx="1" fill="#f5d0b0" />
+                {/* Head */}
+                <circle cx="0" cy="-20" r="6.5" fill="#f5d0b0" />
+                {/* Grey hair */}
+                <path d="M-6,-22 Q-6,-28 0,-28 Q6,-28 6,-22 L5,-19 L-5,-19 Z" fill="#d1d5db" />
+                {/* Glasses */}
+                <circle cx="-2.5" cy="-20" r="2.5" fill="none" stroke="#78716c" strokeWidth="0.8" />
+                <circle cx="2.5" cy="-20" r="2.5" fill="none" stroke="#78716c" strokeWidth="0.8" />
+                <line x1="-5" y1="-20" x2="-6.5" y2="-19" stroke="#78716c" strokeWidth="0.8" />
+                <line x1="5" y1="-20" x2="6.5" y2="-19" stroke="#78716c" strokeWidth="0.8" />
+                {/* Eyes behind glasses */}
+                <circle cx="-2.5" cy="-20" r="0.8" fill="#1e293b" />
+                <circle cx="2.5" cy="-20" r="0.8" fill="#1e293b" />
+            </motion.g>
+        </g>
+    );
+}
+
+/** Seated person seen from side (for bus/metro) */
+function SeatedPerson({
+    x, y, shirtColor = "#64748b", hairColor = "#44403c",
+    skinColor = "#f5d0b0", delay = 0,
+}: {
+    x: number; y: number; shirtColor?: string; hairColor?: string;
+    skinColor?: string; delay?: number;
+}) {
+    return (
+        <g transform={`translate(${x}, ${y})`}>
+            <motion.g
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay, duration: 0.4 }}
+            >
+                {/* Seated torso */}
+                <rect x="-5" y="-8" width="10" height="12" rx="2" fill={shirtColor} />
+                {/* Bent legs */}
+                <path d="M-4,4 L-4,8 L2,8" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                {/* Neck + Head */}
+                <rect x="-1.5" y="-11" width="3" height="3" fill={skinColor} />
+                <circle cx="0" cy="-16" r="5.5" fill={skinColor} />
+                {/* Hair */}
+                <path d="M-5,-18 Q-5,-24 0,-24 Q5,-24 5,-18 L4,-16 L-4,-16 Z" fill={hairColor} />
+                {/* Eye */}
+                <circle cx="1.5" cy="-17" r="0.8" fill="#1e293b" />
+            </motion.g>
+        </g>
+    );
+}
+
+
+/* ══════════════════════════════════════════════
+   SCENE 1 — Railway Station Queue
+   ══════════════════════════════════════════════ */
+function QueueRailwayScene() {
+    return (
+        <svg viewBox="0 0 400 180" className="w-full h-full">
+            <defs>
+                <linearGradient id="rs-sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#fef3c7" />
+                    <stop offset="60%" stopColor="#fffbeb" />
+                    <stop offset="100%" stopColor="#f5f5f4" />
+                </linearGradient>
+                <linearGradient id="rs-platform" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#d6d3d1" />
+                    <stop offset="100%" stopColor="#e7e5e4" />
+                </linearGradient>
+            </defs>
+            <rect width="400" height="180" fill="url(#rs-sky)" />
+
+            {/* Background — Station pillars with roof */}
+            <rect x="0" y="0" width="400" height="18" fill="#a8a29e" opacity={0.2} />
+            {[60, 200, 340].map((px) => (
+                <g key={px}>
+                    <rect x={px - 5} y="18" width="10" height="120" fill="#d6d3d1" />
+                    <rect x={px - 8} y="15" width="16" height="6" rx="1" fill="#a8a29e" />
+                </g>
+            ))}
+
+            {/* Platform floor */}
+            <rect x="0" y="138" width="400" height="42" fill="url(#rs-platform)" />
+            <line x1="0" y1="138" x2="400" y2="138" stroke="#a8a29e" strokeWidth="1.5" />
+            {/* Platform edge yellow stripe */}
+            <rect x="0" y="138" width="400" height="3" fill="#fbbf24" opacity={0.6} />
+
+            {/* Ticket Counter */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+                <rect x="15" y="60" width="65" height="78" rx="3" fill="#78716c" />
+                <rect x="15" y="60" width="65" height="12" rx="3" fill="#57534e" />
+                <text x="47" y="69" textAnchor="middle" fill="#fafaf9" fontSize="6" fontWeight="700" letterSpacing="0.1em">TICKETS</text>
+                {/* Window opening */}
+                <rect x="22" y="78" width="50" height="30" rx="2" fill="#292524" opacity={0.7} />
+                {/* Clerk */}
+                <circle cx="47" cy="92" r="6" fill="#f5d0b0" />
+                <path d="M41,98 L53,98 L54,108 L40,108 Z" fill="#3b82f6" />
+                <path d="M42,86 Q47,82 52,86" fill="#44403c" />
             </motion.g>
 
-            {/* Clock on wall */}
-            <motion.g>
-                <circle cx="45" cy="60" r="10" fill="white" stroke="#d6d3d1" strokeWidth="1.5" />
-                <motion.line
-                    x1="45" y1="60" x2="45" y2="53"
-                    stroke="#57534e" strokeWidth="1.5" strokeLinecap="round"
+            {/* Wall clock */}
+            <g transform="translate(47, 42)">
+                <circle cx="0" cy="0" r="9" fill="white" stroke="#a8a29e" strokeWidth="1.5" />
+                {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((a) => (
+                    <line key={a}
+                        x1={Math.cos(a * Math.PI / 180) * 6.5} y1={Math.sin(a * Math.PI / 180) * 6.5}
+                        x2={Math.cos(a * Math.PI / 180) * 7.5} y2={Math.sin(a * Math.PI / 180) * 7.5}
+                        stroke="#78716c" strokeWidth="0.8" />
+                ))}
+                <motion.line x1="0" y1="0" x2="0" y2="-5.5"
+                    stroke="#1e293b" strokeWidth="1.2" strokeLinecap="round"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                    style={{ transformOrigin: "45px 60px" }}
-                />
-                <motion.line
-                    x1="45" y1="60" x2="50" y2="60"
-                    stroke="#ef4444" strokeWidth="1" strokeLinecap="round"
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                    style={{ transformOrigin: "0px 0px" }} />
+                <motion.line x1="0" y1="0" x2="4" y2="0"
+                    stroke="#ef4444" strokeWidth="0.8" strokeLinecap="round"
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-                    style={{ transformOrigin: "45px 60px" }}
-                />
+                    style={{ transformOrigin: "0px 0px" }} />
+                <circle cx="0" cy="0" r="1" fill="#1e293b" />
+            </g>
+
+            {/* Queue of people */}
+            <FlatPerson x={100} y={118} shirtColor="#6366f1" delay={0.15} />
+            <FlatPerson x={128} y={118} shirtColor="#f59e0b" hairColor="#78350f" delay={0.25} />
+            <FlatPerson x={156} y={118} shirtColor="#10b981" delay={0.35} />
+            <FlatPerson x={184} y={118} shirtColor="#64748b" hairColor="#292524" delay={0.45} />
+            <FlatPerson x={212} y={118} shirtColor="#ec4899" hairColor="#7c2d12" skinColor="#d4a574" delay={0.55} />
+            <FlatPerson x={240} y={118} shirtColor="#8b5cf6" delay={0.65} />
+
+            {/* YOU — arriving, highlighted */}
+            <motion.g animate={{ x: [20, 0] }} transition={{ delay: 0.6, duration: 1.2, ease: "easeOut" }}>
+                <FlatPerson x={290} y={118} shirtColor="#4f46e5" hairColor="#1e293b" delay={0.8}
+                    label="YOU" labelColor="#4f46e5" />
             </motion.g>
 
-            {/* Impatience indicators - small wavy lines above some people */}
-            <motion.text
-                x="190" y="105"
-                fontSize="10" fill="#ef4444"
-                animate={{ opacity: [0, 1, 0], y: [105, 100, 105] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
-            >😤</motion.text>
+            {/* Frustration emoji */}
+            <motion.text x="210" y="82" fontSize="14" textAnchor="middle"
+                animate={{ opacity: [0, 1, 0], y: [82, 76, 82] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: 1.5 }}>😤</motion.text>
 
-            {/* Label */}
-            <text x="350" y="170" textAnchor="end" fill="#a8a29e" fontSize="8" fontWeight="600" letterSpacing="0.1em">RAILWAY STATION</text>
+            <text x="380" y="172" textAnchor="end" fill="#a8a29e" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>RAILWAY STATION</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 2: Loud Phone on Bus
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 2 — Loud Phone on City Bus
+   ══════════════════════════════════════════════ */
 function LoudPhoneScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
                 <linearGradient id="bus-sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#dbeafe" />
+                    <stop offset="0%" stopColor="#bfdbfe" />
                     <stop offset="100%" stopColor="#eff6ff" />
                 </linearGradient>
             </defs>
             <rect width="400" height="180" fill="url(#bus-sky)" />
 
-            {/* Bus body */}
-            <motion.g
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.8 }}
-            >
-                <rect x="30" y="40" width="340" height="100" rx="10" fill="#3b82f6" />
-                <rect x="30" y="40" width="340" height="100" rx="10" fill="none" stroke="#2563eb" strokeWidth="2" />
-
-                {/* Windows */}
-                <rect x="50" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-                <rect x="100" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-                <rect x="150" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-                <rect x="200" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-                <rect x="250" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-                <rect x="300" y="55" width="40" height="30" rx="4" fill="#bfdbfe" />
-
-                {/* Door */}
-                <rect x="340" y="60" width="22" height="60" rx="2" fill="#93c5fd" stroke="#60a5fa" strokeWidth="1" />
-
-                {/* Stripe */}
-                <rect x="30" y="110" width="340" height="8" fill="#2563eb" />
-
-                {/* Wheels */}
-                <circle cx="80" cy="142" r="12" fill="#44403c" />
-                <circle cx="80" cy="142" r="5" fill="#78716c" />
-                <circle cx="320" cy="142" r="12" fill="#44403c" />
-                <circle cx="320" cy="142" r="5" fill="#78716c" />
-            </motion.g>
-
-            {/* Seated people visible through windows */}
-            {/* Quiet passengers */}
-            <circle cx="60" cy="68" r="4" fill="#78716c" />
-            <circle cx="120" cy="68" r="4" fill="#57534e" />
-            <circle cx="220" cy="68" r="4" fill="#78716c" />
-            <circle cx="270" cy="68" r="4" fill="#a8a29e" />
-            <circle cx="320" cy="68" r="4" fill="#57534e" />
-
-            {/* Loud person with phone - highlighted */}
-            <motion.g>
-                <circle cx="170" cy="68" r="5" fill="#ef4444" />
-                {/* Phone */}
-                <motion.rect
-                    x="178" y="62" width="5" height="8" rx="1" fill="#fca5a5"
-                    animate={{ rotate: [-5, 5, -5] }}
-                    transition={{ duration: 0.3, repeat: Infinity }}
-                    style={{ transformOrigin: "180px 66px" }}
-                />
-            </motion.g>
-
-            {/* Sound waves from loud person */}
-            {[0, 1, 2].map((i) => (
-                <motion.path
-                    key={i}
-                    d={`M185,${64 + i * 2} Q${190 + i * 4},${64 + i * 2} ${190 + i * 4},${68 + i * 2}`}
-                    stroke="#ef4444"
-                    strokeWidth="1"
-                    fill="none"
-                    initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity: [0, 0.6, 0], pathLength: [0, 1, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-                />
-            ))}
-
-            {/* Discomfort indicators */}
-            <motion.text
-                x="115" y="62" fontSize="8" fill="#f59e0b"
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: 0.8 }}
-            >😣</motion.text>
-            <motion.text
-                x="265" y="62" fontSize="8" fill="#f59e0b"
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: 1.5 }}
-            >😒</motion.text>
-
             {/* Road */}
-            <rect x="0" y="155" width="400" height="25" fill="#78716c" />
-            <motion.g
-                animate={{ x: [-50, -250] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            >
-                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                    <rect key={i} x={i * 60} y="166" width="30" height="3" rx="1" fill="#fafaf9" opacity={0.5} />
+            <rect x="0" y="148" width="400" height="32" fill="#64748b" />
+            <motion.g animate={{ x: [-60, -300] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
+                {Array.from({ length: 10 }, (_, i) => (
+                    <rect key={i} x={i * 65} y="163" width="30" height="3" rx="1.5" fill="#fafaf9" opacity={0.4} />
                 ))}
             </motion.g>
 
-            <text x="350" y="170" textAnchor="end" fill="#93c5fd" fontSize="8" fontWeight="600" letterSpacing="0.1em">CITY BUS</text>
+            {/* Bus body */}
+            <motion.g initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7 }}>
+                {/* Main body */}
+                <rect x="25" y="38" width="350" height="110" rx="12" fill="#2563eb" />
+                <rect x="25" y="38" width="350" height="110" rx="12" fill="none" stroke="#1d4ed8" strokeWidth="2" />
+                {/* Accent stripe */}
+                <rect x="25" y="115" width="350" height="10" fill="#1d4ed8" />
+                {/* Roof detail */}
+                <rect x="30" y="38" width="340" height="6" rx="3" fill="#1e40af" opacity={0.5} />
+
+                {/* Windows */}
+                {[48, 102, 156, 210, 264, 318].map((wx, i) => (
+                    <g key={i}>
+                        <rect x={wx} y="52" width="42" height="30" rx="4" fill="#dbeafe" stroke="#93c5fd" strokeWidth="1" />
+                        {/* Window reflection */}
+                        <line x1={wx + 3} y1="55" x2={wx + 3} y2="78" stroke="white" strokeWidth="1" opacity={0.3} />
+                    </g>
+                ))}
+
+                {/* Front windshield */}
+                <path d="M25,50 L25,90 L48,90 L48,52 Z" fill="#bfdbfe" stroke="#93c5fd" strokeWidth="1" />
+
+                {/* Door */}
+                <rect x="350" y="55" width="18" height="70" rx="2" fill="#93c5fd" stroke="#60a5fa" strokeWidth="1" />
+                <line x1="359" y1="55" x2="359" y2="125" stroke="#60a5fa" strokeWidth="0.5" />
+
+                {/* Route display */}
+                <rect x="50" y="42" width="40" height="8" rx="2" fill="#1e293b" />
+                <text x="70" y="49" textAnchor="middle" fill="#fbbf24" fontSize="5" fontWeight="700">42A</text>
+
+                {/* Wheels */}
+                {[85, 320].map((wx) => (
+                    <g key={wx}>
+                        <circle cx={wx} cy="150" r="14" fill="#292524" />
+                        <circle cx={wx} cy="150" r="9" fill="#57534e" />
+                        <circle cx={wx} cy="150" r="3" fill="#78716c" />
+                    </g>
+                ))}
+            </motion.g>
+
+            {/* Interior people visible through windows */}
+            <SeatedPerson x={65} y={72} shirtColor="#94a3b8" delay={0.3} />
+            <SeatedPerson x={120} y={72} shirtColor="#78716c" hairColor="#292524" delay={0.4} />
+            <SeatedPerson x={228} y={72} shirtColor="#64748b" delay={0.5} />
+            <SeatedPerson x={282} y={72} shirtColor="#a8a29e" hairColor="#78350f" delay={0.6} />
+            <SeatedPerson x={336} y={72} shirtColor="#475569" delay={0.7} />
+
+            {/* LOUD PERSON — highlighted red, with phone */}
+            <g transform="translate(174, 72)">
+                <SeatedPerson x={0} y={0} shirtColor="#ef4444" hairColor="#1e293b" delay={0.35} />
+                {/* Phone held up */}
+                <motion.g animate={{ rotate: [-3, 3, -3] }} transition={{ duration: 0.4, repeat: Infinity }}
+                    style={{ transformOrigin: "8px -12px" }}>
+                    <rect x="6" y="-18" width="5" height="9" rx="1" fill="#1e293b" />
+                    <rect x="7" y="-17" width="3" height="6" rx="0.5" fill="#60a5fa" />
+                </motion.g>
+            </g>
+
+            {/* Sound waves emanating */}
+            {[0, 1, 2].map((i) => (
+                <motion.path key={i}
+                    d={`M192,${60 - i * 3} Q${198 + i * 5},${56 - i * 3} ${198 + i * 5},${64 - i * 3}`}
+                    fill="none" stroke="#ef4444" strokeWidth={1.5 - i * 0.3} strokeLinecap="round"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.7, 0], scale: [0.9, 1.1, 0.9] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.25 }} />
+            ))}
+
+            {/* Discomfort reactions */}
+            <motion.text x="118" y="57" fontSize="10"
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 1 }}>😣</motion.text>
+            <motion.text x="278" y="57" fontSize="10"
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 2 }}>😒</motion.text>
+
+            <text x="370" y="172" textAnchor="end" fill="#93c5fd" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>CITY BUS</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 3: Littered Park
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 3 — Littered Park
+   ══════════════════════════════════════════════ */
 function LitterParkScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="park-sky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#dcfce7" />
-                    <stop offset="100%" stopColor="#f0fdf4" />
+                <linearGradient id="pk-sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#bae6fd" />
+                    <stop offset="50%" stopColor="#e0f2fe" />
+                    <stop offset="100%" stopColor="#dcfce7" />
                 </linearGradient>
+                <radialGradient id="pk-sun" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0%" stopColor="#fde68a" />
+                    <stop offset="100%" stopColor="#fbbf24" stopOpacity={0} />
+                </radialGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#park-sky)" />
+            <rect width="400" height="180" fill="url(#pk-sky)" />
 
-            {/* Sun */}
-            <motion.g
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 4, repeat: Infinity }}
-            >
-                <circle cx="350" cy="30" r="15" fill="#fbbf24" opacity={0.9} />
-                {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-                    <motion.line
-                        key={angle}
-                        x1={350 + Math.cos(angle * Math.PI / 180) * 18}
-                        y1={30 + Math.sin(angle * Math.PI / 180) * 18}
-                        x2={350 + Math.cos(angle * Math.PI / 180) * 24}
-                        y2={30 + Math.sin(angle * Math.PI / 180) * 24}
+            {/* Sun with glow */}
+            <motion.g animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 5, repeat: Infinity }}>
+                <circle cx="355" cy="28" r="30" fill="url(#pk-sun)" />
+                <circle cx="355" cy="28" r="13" fill="#fbbf24" />
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+                    <motion.line key={a}
+                        x1={355 + Math.cos(a * Math.PI / 180) * 16}
+                        y1={28 + Math.sin(a * Math.PI / 180) * 16}
+                        x2={355 + Math.cos(a * Math.PI / 180) * 22}
+                        y2={28 + Math.sin(a * Math.PI / 180) * 22}
                         stroke="#fbbf24" strokeWidth="2" strokeLinecap="round"
-                        animate={{ opacity: [0.4, 0.8, 0.4] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: angle / 360 }}
-                    />
+                        animate={{ opacity: [0.3, 0.8, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: a / 400 }} />
                 ))}
             </motion.g>
 
-            {/* Grass */}
-            <rect x="0" y="120" width="400" height="60" fill="#86efac" rx="0" />
-            <rect x="0" y="118" width="400" height="6" fill="#4ade80" rx="3" />
+            {/* Rolling hills background */}
+            <path d="M0,130 Q60,100 130,120 Q200,140 280,115 Q350,95 400,110 V180 H0 Z" fill="#86efac" opacity={0.5} />
 
-            {/* Trees */}
-            {/* Tree 1 */}
-            <rect x="35" y="70" width="8" height="50" rx="2" fill="#92400e" />
-            <circle cx="39" cy="55" r="25" fill="#22c55e" opacity={0.8} />
-            <circle cx="28" cy="65" r="18" fill="#16a34a" opacity={0.7} />
-            <circle cx="52" cy="62" r="16" fill="#15803d" opacity={0.6} />
+            {/* Grass ground */}
+            <path d="M0,130 Q100,118 200,128 Q300,138 400,125 V180 H0 Z" fill="#4ade80" />
+            <path d="M0,140 Q150,132 250,142 Q350,150 400,138 V180 H0 Z" fill="#22c55e" />
 
-            {/* Tree 2 */}
-            <rect x="310" y="80" width="6" height="40" rx="2" fill="#92400e" />
-            <circle cx="313" cy="68" r="20" fill="#22c55e" opacity={0.8} />
-            <circle cx="325" cy="75" r="15" fill="#16a34a" opacity={0.6} />
+            {/* Tree left — detailed */}
+            <g transform="translate(50, 50)">
+                <rect x="-4" y="30" width="8" height="55" rx="3" fill="#78350f" />
+                {/* Bark texture */}
+                <line x1="-2" y1="45" x2="-1" y2="60" stroke="#92400e" strokeWidth="1" opacity={0.4} />
+                <line x1="1" y1="38" x2="2" y2="55" stroke="#92400e" strokeWidth="1" opacity={0.4} />
+                {/* Branch */}
+                <path d="M4,40 Q15,30 20,35" stroke="#78350f" strokeWidth="3" fill="none" strokeLinecap="round" />
+                {/* Foliage */}
+                <circle cx="0" cy="15" r="22" fill="#16a34a" />
+                <circle cx="-14" cy="25" r="16" fill="#15803d" />
+                <circle cx="16" cy="22" r="18" fill="#22c55e" />
+                <circle cx="5" cy="5" r="15" fill="#4ade80" opacity={0.6} />
+                {/* Leaf highlight */}
+                <circle cx="-8" cy="10" r="5" fill="#86efac" opacity={0.4} />
+            </g>
+
+            {/* Tree right */}
+            <g transform="translate(340, 60)">
+                <rect x="-3" y="25" width="6" height="42" rx="2" fill="#78350f" />
+                <circle cx="0" cy="12" r="18" fill="#16a34a" />
+                <circle cx="-10" cy="20" r="13" fill="#22c55e" />
+                <circle cx="12" cy="18" r="14" fill="#15803d" />
+            </g>
+
+            {/* Park bench */}
+            <g transform="translate(135, 115)">
+                <rect x="0" y="0" width="40" height="3" rx="1" fill="#92400e" />
+                <rect x="0" y="5" width="40" height="3" rx="1" fill="#78350f" />
+                <rect x="2" y="-12" width="3" height="14" fill="#57534e" />
+                <rect x="35" y="-12" width="3" height="14" fill="#57534e" />
+                <rect x="0" y="-14" width="40" height="3" rx="1" fill="#92400e" />
+            </g>
 
             {/* Swing set */}
-            <g transform="translate(280, 90)">
-                <line x1="-15" y1="0" x2="-15" y2="35" stroke="#a8a29e" strokeWidth="2" />
-                <line x1="15" y1="0" x2="15" y2="35" stroke="#a8a29e" strokeWidth="2" />
-                <line x1="-18" y1="0" x2="18" y2="0" stroke="#a8a29e" strokeWidth="2.5" />
+            <g transform="translate(270, 78)">
+                {/* A-frame */}
+                <line x1="-20" y1="50" x2="-6" y2="0" stroke="#78716c" strokeWidth="2.5" />
+                <line x1="6" y1="0" x2="20" y2="50" stroke="#78716c" strokeWidth="2.5" />
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#78716c" strokeWidth="3" />
                 {/* Swinging child */}
                 <motion.g
-                    animate={{ rotate: [-15, 15, -15] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    style={{ transformOrigin: "0px 0px" }}
-                >
-                    <line x1="0" y1="0" x2="0" y2="25" stroke="#a8a29e" strokeWidth="1.5" />
-                    <circle cx="0" cy="28" r="3.5" fill="#f472b6" />
+                    animate={{ rotate: [-20, 20, -20] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ transformOrigin: "0px 0px" }}>
+                    <line x1="0" y1="0" x2="0" y2="32" stroke="#a8a29e" strokeWidth="1.5" />
+                    <rect x="-4" y="32" width="8" height="3" rx="1" fill="#78716c" />
+                    {/* Child */}
+                    <circle cx="0" cy="26" r="4" fill="#f472b6" />
+                    <circle cx="0" cy="21" r="3" fill="#f5d0b0" />
                 </motion.g>
             </g>
 
-            {/* Family walking away - animated */}
-            <motion.g
-                animate={{ x: [0, 30] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-            >
-                <Person x={200} y={128} fill="#57534e" delay={0.3} scale={0.9} />
-                <Person x={215} y={128} fill="#78716c" delay={0.4} scale={0.8} />
-                <Person x={208} y={132} fill="#a8a29e" delay={0.5} scale={0.6} />
+            {/* Family walking away */}
+            <motion.g animate={{ x: [0, 40] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }}>
+                <FlatPerson x={185} y={120} shirtColor="#475569" hairColor="#292524" delay={0.3} scale={0.7} />
+                <FlatPerson x={198} y={120} shirtColor="#6b7280" hairColor="#78350f" skinColor="#d4a574" delay={0.4} scale={0.65} />
+                <FlatPerson x={192} y={124} shirtColor="#f472b6" hairColor="#44403c" delay={0.5} scale={0.45} />
             </motion.g>
 
-            {/* Litter on ground */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-            >
+            {/* Litter scattered on ground */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.6 }}>
+                {/* Crushed can */}
+                <ellipse cx="160" cy="142" rx="4" ry="2.5" fill="#ef4444" opacity={0.8} />
+                <rect x="157" y="139" width="6" height="3" rx="1" fill="#dc2626" opacity={0.7} />
+                {/* Plastic bottle */}
+                <rect x="175" y="136" width="3.5" height="10" rx="1.5" fill="#38bdf8" opacity={0.6} />
+                <rect x="176" y="134" width="1.5" height="3" rx="0.5" fill="#38bdf8" opacity={0.5} />
                 {/* Wrapper */}
-                <rect x="155" y="136" width="8" height="5" rx="1" fill="#fbbf24" transform="rotate(15, 159, 138)" />
-                {/* Bottle */}
-                <rect x="168" y="133" width="4" height="10" rx="2" fill="#60a5fa" opacity={0.7} />
-                {/* Crumpled paper */}
-                <circle cx="180" cy="138" r="3" fill="#e7e5e4" />
-                {/* Another wrapper */}
-                <rect x="145" y="140" width="6" height="4" rx="1" fill="#f87171" transform="rotate(-10, 148, 142)" />
+                <rect x="150" y="145" width="7" height="4" rx="0.5" fill="#fbbf24" transform="rotate(18, 153, 147)" />
+                {/* Paper bag */}
+                <rect x="190" y="140" width="8" height="6" rx="1" fill="#d6d3d1" transform="rotate(-12, 194, 143)" />
+                {/* Chip packet */}
+                <rect x="140" y="148" width="6" height="8" rx="1" fill="#a855f7" opacity={0.7} transform="rotate(8, 143, 152)" />
             </motion.g>
 
             {/* Drifting wrapper animation */}
-            <motion.rect
-                x="175" y="130" width="5" height="3" rx="1" fill="#fbbf24" opacity={0.6}
-                animate={{ x: [175, 200, 210], y: [130, 125, 132], rotate: [0, 45, 90] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            />
+            <motion.g
+                animate={{ x: [0, 50, 60], y: [0, -12, 2], rotate: [0, 60, 120] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
+                <rect x="170" y="135" width="5" height="3" rx="0.5" fill="#fbbf24" opacity={0.5} />
+            </motion.g>
 
-            <text x="350" y="170" textAnchor="end" fill="#86efac" fontSize="8" fontWeight="600" letterSpacing="0.1em">PUBLIC PARK</text>
+            <text x="380" y="172" textAnchor="end" fill="#86efac" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>PUBLIC PARK</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 4: Priority Seat on Metro
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 4 — Priority Seat on Metro
+   ══════════════════════════════════════════════ */
 function PrioritySeatScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="metro-bg" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="mt-bg" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ede9fe" />
                     <stop offset="100%" stopColor="#f5f3ff" />
                 </linearGradient>
+                <linearGradient id="mt-floor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#d6d3d1" />
+                    <stop offset="100%" stopColor="#e7e5e4" />
+                </linearGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#metro-bg)" />
+            <rect width="400" height="180" fill="url(#mt-bg)" />
 
-            {/* Metro interior walls */}
-            <rect x="10" y="20" width="380" height="130" rx="8" fill="#e7e5e4" />
-            <rect x="10" y="20" width="380" height="130" rx="8" fill="none" stroke="#d6d3d1" strokeWidth="2" />
+            {/* Metro car shell */}
+            <rect x="8" y="16" width="384" height="148" rx="10" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="2" />
+            {/* Interior ceiling */}
+            <rect x="8" y="16" width="384" height="20" rx="10" fill="#e2e8f0" />
 
             {/* Overhead rail */}
-            <line x1="20" y1="35" x2="380" y2="35" stroke="#a8a29e" strokeWidth="3" />
+            <line x1="18" y1="36" x2="382" y2="36" stroke="#94a3b8" strokeWidth="3" />
 
-            {/* Hanging handles */}
-            {[60, 120, 180, 240, 300, 350].map((xPos, i) => (
-                <motion.g
-                    key={i}
-                    animate={{ rotate: [-3, 3, -3] }}
-                    transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.2 }}
-                    style={{ transformOrigin: `${xPos}px 35px` }}
-                >
-                    <line x1={xPos} y1="35" x2={xPos} y2="50" stroke="#a8a29e" strokeWidth="1.5" />
-                    <circle cx={xPos} cy="53" r="5" fill="none" stroke="#a8a29e" strokeWidth="1.5" />
+            {/* Hanging handles — swaying */}
+            {[55, 105, 155, 205, 255, 305, 355].map((xPos, i) => (
+                <motion.g key={i}
+                    animate={{ rotate: [-4, 4, -4] }}
+                    transition={{ duration: 3, repeat: Infinity, delay: i * 0.3, ease: "easeInOut" }}
+                    style={{ transformOrigin: `${xPos}px 36px` }}>
+                    <line x1={xPos} y1="36" x2={xPos} y2="52" stroke="#94a3b8" strokeWidth="1.5" />
+                    <circle cx={xPos} cy="56" r="5" fill="none" stroke="#94a3b8" strokeWidth="2" />
                 </motion.g>
             ))}
 
-            {/* Priority section marker */}
-            <rect x="20" y="140" width="120" height="6" rx="2" fill="#8b5cf6" opacity={0.6} />
-            <text x="80" y="134" textAnchor="middle" fill="#7c3aed" fontSize="6" fontWeight="600">PRIORITY</text>
+            {/* Floor */}
+            <rect x="8" y="140" width="384" height="24" rx="0" fill="url(#mt-floor)" />
 
-            {/* Seats */}
-            {[35, 75, 115].map((xPos, i) => (
-                <rect key={i} x={xPos} y="105" width="25" height="30" rx="3" fill="#c4b5fd" stroke="#a78bfa" strokeWidth="1" />
-            ))}
-            {[200, 240, 280, 320].map((xPos, i) => (
-                <rect key={i} x={xPos} y="105" width="25" height="30" rx="3" fill="#d6d3d1" stroke="#a8a29e" strokeWidth="1" />
+            {/* Priority section — left side */}
+            <rect x="18" y="142" width="130" height="4" rx="2" fill="#8b5cf6" opacity={0.5} />
+            <text x="83" y="138" textAnchor="middle" fill="#7c3aed" fontSize="5.5" fontWeight="700" letterSpacing="0.08em">⬥ PRIORITY SEATING ⬥</text>
+
+            {/* Priority seats */}
+            {[28, 68, 108].map((sx, i) => (
+                <g key={i}>
+                    <rect x={sx} y="105" width="28" height="35" rx="4" fill="#c4b5fd" stroke="#a78bfa" strokeWidth="1" />
+                    <rect x={sx + 2} y="108" width="24" height="5" rx="2" fill="#ddd6fe" />
+                </g>
             ))}
 
-            {/* "You" seated in priority section */}
-            <motion.g>
-                <circle cx="47" cy="95" r="5" fill="#4f46e5" />
-                <rect x="41" y="100" width="12" height="8" rx="2" fill="#4f46e5" />
-                <text x="47" y="80" textAnchor="middle" fill="#4f46e5" fontSize="6" fontWeight="700">YOU</text>
-            </motion.g>
+            {/* Regular seats */}
+            {[200, 240, 280, 320].map((sx, i) => (
+                <g key={i}>
+                    <rect x={sx} y="105" width="28" height="35" rx="4" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                    <rect x={sx + 2} y="108" width="24" height="5" rx="2" fill="#f1f5f9" />
+                </g>
+            ))}
+
+            {/* YOU seated in priority seat */}
+            <SeatedPerson x={42} y={98} shirtColor="#4f46e5" hairColor="#1e293b" delay={0.2} />
+            <text x="42" y="78" textAnchor="middle" fill="#4f46e5" fontSize="6" fontWeight="700">YOU</text>
 
             {/* Other seated people */}
-            <circle cx="87" cy="95" r="4" fill="#78716c" />
-            <circle cx="127" cy="95" r="4" fill="#57534e" />
-            <circle cx="212" cy="95" r="4" fill="#78716c" />
-            <circle cx="292" cy="95" r="4" fill="#a8a29e" />
+            <SeatedPerson x={82} y={98} shirtColor="#78716c" delay={0.3} />
+            <SeatedPerson x={214} y={98} shirtColor="#64748b" hairColor="#292524" delay={0.4} />
+            <SeatedPerson x={294} y={98} shirtColor="#94a3b8" delay={0.5} />
 
-            {/* Elder person entering from door */}
+            {/* Door area on right */}
+            <rect x="365" y="40" width="22" height="100" rx="3" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1" />
+            <motion.rect x="365" y="40" width="22" height="100" rx="3"
+                fill="#a78bfa" opacity={0.15}
+                animate={{ opacity: [0.15, 0.05, 0.15] }}
+                transition={{ duration: 2, repeat: Infinity }} />
+
+            {/* Elder entering through door */}
             <motion.g
-                initial={{ x: 40, opacity: 0 }}
+                initial={{ x: 35, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
-            >
-                <ElderPerson x={360} y={118} fill="#92400e" delay={1} />
+                transition={{ delay: 0.8, duration: 1.4, ease: "easeOut" }}>
+                <FlatElder x={360} y={118} shirtColor="#a16207" delay={1} />
             </motion.g>
 
-            {/* Door opening indicator */}
-            <motion.rect
-                x="370" y="45" width="15" height="90" rx="2"
-                fill="#a78bfa"
-                opacity={0.3}
-                animate={{ opacity: [0.3, 0.1, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-            />
+            {/* Door chime */}
+            <motion.text x="380" y="34" fontSize="10"
+                animate={{ opacity: [0, 1, 0], y: [34, 28, 34] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}>🔔</motion.text>
 
-            {/* "Ding" door chime */}
-            <motion.text
-                x="377" y="42" fontSize="8"
-                animate={{ opacity: [0, 1, 0], y: [42, 36, 42] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-            >🔔</motion.text>
-
-            <text x="350" y="170" textAnchor="end" fill="#a78bfa" fontSize="8" fontWeight="600" letterSpacing="0.1em">METRO TRAIN</text>
+            <text x="370" y="172" textAnchor="end" fill="#a78bfa" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>METRO TRAIN</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 5: Street Vendor
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 5 — Street Vendor / Marketplace
+   ══════════════════════════════════════════════ */
 function StreetVendorScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="vendor-bg" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="mk-bg" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#fce7f3" />
-                    <stop offset="100%" stopColor="#fff1f2" />
+                    <stop offset="60%" stopColor="#fff1f2" />
+                    <stop offset="100%" stopColor="#fef2f2" />
                 </linearGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#vendor-bg)" />
+            <rect width="400" height="180" fill="url(#mk-bg)" />
 
-            {/* Market stalls in background */}
-            <rect x="0" y="60" width="60" height="80" fill="#fbbf24" opacity={0.3} rx="3" />
-            <rect x="340" y="65" width="60" height="75" fill="#60a5fa" opacity={0.3} rx="3" />
+            {/* Background market stalls */}
+            <g opacity={0.3}>
+                {/* Stall left */}
+                <rect x="5" y="50" width="55" height="90" rx="3" fill="#fbbf24" />
+                <path d="M0,50 L32,28 L60,50" fill="#f59e0b" />
+                {/* Stall right */}
+                <rect x="345" y="55" width="55" height="85" rx="3" fill="#60a5fa" />
+                <path d="M340,55 L372,33 L400,55" fill="#3b82f6" />
+            </g>
 
-            {/* Ground */}
-            <rect x="0" y="140" width="400" height="40" fill="#e7e5e4" />
+            {/* Ground — cobblestone feel */}
+            <rect x="0" y="140" width="400" height="40" fill="#d6d3d1" />
+            <rect x="0" y="140" width="400" height="2" fill="#a8a29e" opacity={0.4} />
 
-            {/* Vendor's cart */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-            >
-                {/* Cart body */}
-                <rect x="140" y="100" width="60" height="35" rx="3" fill="#78716c" />
-                <rect x="145" y="105" width="50" height="12" rx="2" fill="#f87171" />
-                {/* Fruits on cart */}
-                <circle cx="155" cy="108" r="3" fill="#fbbf24" />
-                <circle cx="163" cy="110" r="3" fill="#f97316" />
-                <circle cx="171" cy="108" r="3" fill="#22c55e" />
-                <circle cx="179" cy="110" r="3" fill="#ef4444" />
-                <circle cx="187" cy="108" r="3" fill="#fbbf24" />
-                {/* Wheels */}
-                <circle cx="155" cy="138" r="5" fill="#44403c" />
-                <circle cx="185" cy="138" r="5" fill="#44403c" />
+            {/* Vendor Cart — detailed */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+                {/* Cart frame */}
+                <rect x="130" y="95" width="70" height="40" rx="4" fill="#78350f" stroke="#57534e" strokeWidth="1" />
+                {/* Cart shelf */}
+                <rect x="127" y="92" width="76" height="4" rx="1" fill="#a8a29e" />
+                {/* Awning */}
+                <path d="M125,92 L165,72 L205,92" fill="#ef4444" opacity={0.8} />
+                <path d="M125,92 L165,72 L205,92" fill="none" stroke="#dc2626" strokeWidth="1" />
+                {/* Striped awning detail */}
+                <line x1="135" y1="89" x2="155" y2="76" stroke="white" strokeWidth="1" opacity={0.3} />
+                <line x1="155" y1="89" x2="165" y2="76" stroke="white" strokeWidth="1" opacity={0.3} />
+                <line x1="175" y1="89" x2="175" y2="76" stroke="white" strokeWidth="1" opacity={0.3} />
+
+                {/* Fruits arranged on display */}
+                {/* Row 1 */}
+                <circle cx="140" cy="89" r="4" fill="#ef4444" stroke="#dc2626" strokeWidth="0.5" />
+                <circle cx="150" cy="89" r="4" fill="#f97316" stroke="#ea580c" strokeWidth="0.5" />
+                <circle cx="160" cy="89" r="4" fill="#eab308" stroke="#ca8a04" strokeWidth="0.5" />
+                <circle cx="170" cy="89" r="4" fill="#22c55e" stroke="#16a34a" strokeWidth="0.5" />
+                <circle cx="180" cy="89" r="4" fill="#a855f7" stroke="#9333ea" strokeWidth="0.5" />
+                <circle cx="190" cy="89" r="4" fill="#ef4444" stroke="#dc2626" strokeWidth="0.5" />
+                {/* Row 2 */}
+                <circle cx="145" cy="82" r="3.5" fill="#fbbf24" stroke="#f59e0b" strokeWidth="0.5" />
+                <circle cx="155" cy="82" r="3.5" fill="#22c55e" stroke="#16a34a" strokeWidth="0.5" />
+                <circle cx="165" cy="82" r="3.5" fill="#f97316" stroke="#ea580c" strokeWidth="0.5" />
+                <circle cx="175" cy="82" r="3.5" fill="#ef4444" stroke="#dc2626" strokeWidth="0.5" />
+                <circle cx="185" cy="82" r="3.5" fill="#fbbf24" stroke="#f59e0b" strokeWidth="0.5" />
+
+                {/* Cart wheels */}
+                <circle cx="145" cy="138" r="7" fill="#292524" />
+                <circle cx="145" cy="138" r="3" fill="#57534e" />
+                <circle cx="185" cy="138" r="7" fill="#292524" />
+                <circle cx="185" cy="138" r="3" fill="#57534e" />
+                {/* Cart handle */}
+                <line x1="127" y1="110" x2="115" y2="105" stroke="#57534e" strokeWidth="3" strokeLinecap="round" />
             </motion.g>
 
-            {/* Vendor (elderly woman) - pleading */}
-            <motion.g
-                animate={{ y: [0, 1, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-            >
-                <ElderPerson x={125} y={128} fill="#92400e" delay={0.3} />
+            {/* Vendor (elderly woman) */}
+            <motion.g animate={{ y: [0, 1.5, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+                <FlatElder x={110} y={118} shirtColor="#92400e" delay={0.3} />
             </motion.g>
 
-            {/* Tears */}
-            <motion.circle
-                cx="123" cy="112" r="1" fill="#60a5fa"
-                animate={{ y: [0, 8], opacity: [1, 0] }}
-                transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-            />
-            <motion.circle
-                cx="127" cy="113" r="1" fill="#60a5fa"
-                animate={{ y: [0, 8], opacity: [1, 0] }}
-                transition={{ duration: 1, repeat: Infinity, delay: 1 }}
-            />
+            {/* Animated tears */}
+            {[0, 1].map((i) => (
+                <motion.circle key={i}
+                    cx={108 + i * 4} cy={98} r={1.2} fill="#38bdf8"
+                    animate={{ y: [0, 12], opacity: [0.8, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.6 }} />
+            ))}
 
-            {/* Officer - aggressive stance */}
-            <motion.g>
-                <Person x={220} y={128} fill="#1e40af" delay={0.4} scale={1.1} />
-                {/* Cap */}
-                <rect x="214" y="103" width="12" height="4" rx="1" fill="#1e3a8a" />
-            </motion.g>
+            {/* Officer */}
+            <FlatPerson x={225} y={118} shirtColor="#1e3a8a" pantsColor="#1e293b" hairColor="#0f172a"
+                delay={0.4} scale={1.05} armPose="hips" facing={-1} />
+            {/* Officer cap brim */}
+            <rect x="220" y="89" width="12" height="3" rx="1" fill="#1e3a8a" />
 
             {/* Grabbing motion lines */}
-            <motion.line
-                x1="210" y1="122" x2="200" y2="118"
-                stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"
-                animate={{ opacity: [0, 0.6, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-            />
+            <motion.g animate={{ opacity: [0, 0.5, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <line x1="213" y1="112" x2="203" y2="108" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+                <line x1="213" y1="116" x2="205" y2="114" stroke="#ef4444" strokeWidth="1" strokeLinecap="round" />
+            </motion.g>
 
-            {/* Crowd watching (bystanders) */}
-            <Person x={270} y={128} fill="#a8a29e" delay={0.6} scale={0.85} />
-            <Person x={290} y={128} fill="#78716c" delay={0.7} scale={0.85} />
-            <Person x={310} y={130} fill="#a8a29e" delay={0.8} scale={0.75} />
+            {/* Bystanders watching */}
+            <FlatPerson x={275} y={118} shirtColor="#94a3b8" hairColor="#57534e" delay={0.6} scale={0.8} />
+            <FlatPerson x={300} y={118} shirtColor="#78716c" hairColor="#292524" skinColor="#d4a574" delay={0.7} scale={0.8} />
+            <FlatPerson x={325} y={120} shirtColor="#a8a29e" hairColor="#78350f" delay={0.8} scale={0.7} />
 
-            {/* Phone recording icon on a bystander */}
-            <motion.rect
-                x="285" y="113" width="5" height="8" rx="1" fill="#a8a29e"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-            />
-            <motion.circle
-                cx="287" cy="115" r="1" fill="#ef4444"
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 1, repeat: Infinity }}
-            />
+            {/* Phone recording with red dot */}
+            <motion.g>
+                <rect x="296" y="100" width="5" height="9" rx="1" fill="#1e293b" />
+                <rect x="297" y="101" width="3" height="6" rx="0.5" fill="#334155" />
+                <motion.circle cx="298" cy="102" r="1" fill="#ef4444"
+                    animate={{ opacity: [0, 1, 0] }} transition={{ duration: 0.8, repeat: Infinity }} />
+            </motion.g>
 
-            <text x="350" y="170" textAnchor="end" fill="#fda4af" fontSize="8" fontWeight="600" letterSpacing="0.1em">MARKETPLACE</text>
+            <text x="380" y="172" textAnchor="end" fill="#fda4af" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>MARKETPLACE</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 6: Broken Pipe / Water Wastage
-   ───────────────────────────────────────────── */
+
+
+/* ══════════════════════════════════════════════
+   SCENE 6 — Water Wastage / Broken Pipe
+   ══════════════════════════════════════════════ */
 function WaterWastageScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="water-bg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#e0f2fe" />
+                <linearGradient id="wt-bg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#bae6fd" />
                     <stop offset="100%" stopColor="#f0f9ff" />
                 </linearGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#water-bg)" />
+            <rect width="400" height="180" fill="url(#wt-bg)" />
 
             {/* Sun */}
-            <circle cx="340" cy="30" r="14" fill="#fbbf24" />
+            <circle cx="350" cy="28" r="14" fill="#fbbf24" />
+            {[0, 60, 120, 180, 240, 300].map((a) => (
+                <line key={a}
+                    x1={350 + Math.cos(a * Math.PI / 180) * 17}
+                    y1={28 + Math.sin(a * Math.PI / 180) * 17}
+                    x2={350 + Math.cos(a * Math.PI / 180) * 21}
+                    y2={28 + Math.sin(a * Math.PI / 180) * 21}
+                    stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+            ))}
 
             {/* Ground */}
             <rect x="0" y="140" width="400" height="40" fill="#d6d3d1" />
 
             {/* Neighbor's house */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-            >
-                {/* House body */}
-                <rect x="60" y="60" width="120" height="80" rx="3" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1" />
-                {/* Roof */}
-                <polygon points="50,60 120,25 190,60" fill="#f97316" opacity={0.8} />
-                {/* Door */}
-                <rect x="100" y="100" width="20" height="40" rx="2" fill="#92400e" />
-                <circle cx="116" cy="122" r="2" fill="#fbbf24" />
-                {/* Window */}
-                <rect x="75" y="75" width="18" height="18" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
-                <line x1="84" y1="75" x2="84" y2="93" stroke="#60a5fa" strokeWidth="0.5" />
-                <line x1="75" y1="84" x2="93" y2="84" stroke="#60a5fa" strokeWidth="0.5" />
-                <rect x="145" y="75" width="18" height="18" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+                <rect x="50" y="55" width="130" height="85" rx="3" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1.5" />
+                <polygon points="40,55 115,18 190,55" fill="#f97316" />
+                <polygon points="40,55 115,18 190,55" fill="none" stroke="#ea580c" strokeWidth="1" />
+                <rect x="150" y="25" width="12" height="30" rx="1" fill="#a8a29e" />
+                <rect x="100" y="95" width="25" height="45" rx="2" fill="#78350f" stroke="#57534e" strokeWidth="1" />
+                <circle cx="120" cy="120" r="2" fill="#fbbf24" />
+                <rect x="65" y="72" width="22" height="20" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
+                <line x1="76" y1="72" x2="76" y2="92" stroke="#93c5fd" strokeWidth="0.5" />
+                <line x1="65" y1="82" x2="87" y2="82" stroke="#93c5fd" strokeWidth="0.5" />
+                <rect x="140" y="72" width="22" height="20" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
             </motion.g>
 
-            {/* Broken pipe on side of house */}
-            <rect x="180" y="80" width="6" height="30" rx="2" fill="#a8a29e" />
-            <rect x="178" y="108" width="10" height="6" rx="1" fill="#78716c" />
+            {/* Pipe */}
+            <rect x="180" y="60" width="5" height="50" rx="1.5" fill="#94a3b8" />
+            <rect x="178" y="108" width="9" height="7" rx="1" fill="#64748b" />
+            <path d="M183,100 L186,103 L182,106" stroke="#ef4444" strokeWidth="1" fill="none" />
 
-            {/* Water leak animation */}
-            {[0, 1, 2, 3, 4].map((i) => (
-                <motion.circle
-                    key={i}
-                    cx={183}
-                    cy={115}
-                    r={2}
-                    fill="#38bdf8"
-                    opacity={0.7}
-                    animate={{
-                        cy: [115, 145],
-                        cx: [183, 185 + i * 3],
-                        opacity: [0.7, 0],
-                        r: [2, 1],
-                    }}
-                    transition={{
-                        duration: 1.2,
-                        repeat: Infinity,
-                        delay: i * 0.25,
-                        ease: "easeIn",
-                    }}
-                />
+            {/* Water drops */}
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+                <motion.ellipse key={i}
+                    cx={183} cy={115} rx={2} ry={1.5} fill="#38bdf8" opacity={0.7}
+                    animate={{ cy: [115, 148], cx: [183, 186 + i * 3], opacity: [0.7, 0] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2, ease: "easeIn" }} />
             ))}
 
             {/* Water stream on ground */}
             <motion.path
-                d="M185,142 Q200,145 230,143 Q260,141 300,144 Q340,146 380,143"
-                stroke="#38bdf8"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-                animate={{ strokeDashoffset: [0, -20] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                strokeDasharray="8 6"
-            />
+                d="M186,143 Q210,146 240,144 Q280,142 330,145 Q370,148 400,144"
+                stroke="#38bdf8" strokeWidth="3.5" fill="none" strokeLinecap="round"
+                strokeDasharray="8 5"
+                animate={{ strokeDashoffset: [0, -26] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }} />
+            <ellipse cx="240" cy="146" rx="25" ry="5" fill="#7dd3fc" opacity={0.4} />
 
-            {/* Small puddle */}
-            <ellipse cx="220" cy="145" rx="20" ry="4" fill="#7dd3fc" opacity={0.5} />
+            {/* Your house */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                <rect x="250" y="65" width="110" height="75" rx="3" fill="#f5f5f4" stroke="#d6d3d1" strokeWidth="1.5" />
+                <polygon points="240,65 305,32 370,65" fill="#64748b" />
+                <rect x="290" y="100" width="22" height="40" rx="2" fill="#78716c" />
+                <rect x="262" y="78" width="18" height="16" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
+                <rect x="330" y="78" width="18" height="16" rx="2" fill="#bfdbfe" stroke="#60a5fa" strokeWidth="1" />
+            </motion.g>
 
-            {/* Your house (next door) */}
-            <rect x="260" y="70" width="100" height="70" rx="3" fill="#f5f5f4" stroke="#d6d3d1" strokeWidth="1" />
-            <polygon points="250,70 310,40 370,70" fill="#78716c" opacity={0.6} />
-            <rect x="295" y="100" width="18" height="40" rx="2" fill="#a8a29e" />
-            <rect x="270" y="80" width="16" height="14" rx="2" fill="#bfdbfe" />
+            {/* You peeking */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.5 }}>
+                <circle cx="271" cy="86" r="4" fill="#4f46e5" />
+            </motion.g>
 
-            {/* You peeking from window */}
-            <motion.circle
-                cx="278" cy="87" r="3" fill="#4f46e5"
-                animate={{ opacity: [0, 1] }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-            />
-
-            <text x="350" y="170" textAnchor="end" fill="#7dd3fc" fontSize="8" fontWeight="600" letterSpacing="0.1em">NEIGHBORHOOD</text>
+            <text x="380" y="172" textAnchor="end" fill="#7dd3fc" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>NEIGHBORHOOD</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 7: Accident Witness
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 7 — Accident Witness (Wet Road)
+   ══════════════════════════════════════════════ */
 function AccidentScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="accident-bg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#e2e8f0" />
-                    <stop offset="100%" stopColor="#f1f5f9" />
+                <linearGradient id="ac-bg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#94a3b8" />
+                    <stop offset="40%" stopColor="#cbd5e1" />
+                    <stop offset="100%" stopColor="#e2e8f0" />
                 </linearGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#accident-bg)" />
+            <rect width="400" height="180" fill="url(#ac-bg)" />
 
-            {/* Dark clouds */}
-            <motion.g
-                animate={{ x: [0, 15, 0] }}
-                transition={{ duration: 8, repeat: Infinity }}
-            >
-                <ellipse cx="80" cy="25" rx="40" ry="15" fill="#94a3b8" opacity={0.5} />
-                <ellipse cx="60" cy="20" rx="30" ry="12" fill="#94a3b8" opacity={0.4} />
-                <ellipse cx="200" cy="18" rx="35" ry="13" fill="#94a3b8" opacity={0.3} />
+            {/* Clouds */}
+            <motion.g animate={{ x: [0, 12, 0] }} transition={{ duration: 10, repeat: Infinity }}>
+                <ellipse cx="70" cy="22" rx="50" ry="16" fill="#64748b" opacity={0.5} />
+                <ellipse cx="150" cy="15" rx="40" ry="12" fill="#94a3b8" opacity={0.4} />
+                <ellipse cx="280" cy="20" rx="45" ry="14" fill="#64748b" opacity={0.3} />
             </motion.g>
 
-            {/* Rain drops */}
-            {Array.from({ length: 12 }, (_, i) => (
-                <motion.line
-                    key={i}
-                    x1={30 + i * 32}
-                    y1={20}
-                    x2={25 + i * 32}
-                    y2={30}
-                    stroke="#94a3b8"
-                    strokeWidth="1"
-                    opacity={0.3}
-                    animate={{ y: [0, 140], opacity: [0.3, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15, ease: "linear" }}
-                />
+            {/* Rain */}
+            {Array.from({ length: 16 }, (_, i) => (
+                <motion.line key={i}
+                    x1={20 + i * 24} y1={10} x2={14 + i * 24} y2={22}
+                    stroke="#94a3b8" strokeWidth="1" opacity={0.25}
+                    animate={{ y: [0, 160], opacity: [0.25, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.1, ease: "linear" }} />
             ))}
 
             {/* Road */}
-            <rect x="0" y="120" width="400" height="60" fill="#64748b" />
-            <line x1="0" y1="148" x2="400" y2="148" stroke="#fbbf24" strokeWidth="2" strokeDasharray="15 10" />
+            <rect x="0" y="115" width="400" height="65" fill="#475569" />
+            <rect x="0" y="115" width="400" height="65" fill="#94a3b8" opacity={0.12} />
+            <line x1="0" y1="146" x2="400" y2="146" stroke="#fbbf24" strokeWidth="2" strokeDasharray="18 12" />
 
-            {/* Wet road sheen */}
-            <rect x="0" y="120" width="400" height="60" fill="#94a3b8" opacity={0.15} />
+            {/* Streetlight */}
+            <rect x="85" y="40" width="3.5" height="75" fill="#475569" />
+            <motion.circle cx="87" cy="38" r="6" fill="#fbbf24" opacity={0.5}
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity }} />
+            <path d="M81,44 L70,115 L104,115 L93,44 Z" fill="#fbbf24" opacity={0.04} />
 
             {/* Fallen bike */}
-            <motion.g
-                initial={{ rotate: 0 }}
-                animate={{ rotate: -45 }}
-                transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-                style={{ transformOrigin: "160px 135px" }}
-            >
-                {/* Bike frame */}
-                <circle cx="145" cy="135" r="10" fill="none" stroke="#ef4444" strokeWidth="2" />
-                <circle cx="175" cy="135" r="10" fill="none" stroke="#ef4444" strokeWidth="2" />
-                <line x1="145" y1="135" x2="160" y2="120" stroke="#ef4444" strokeWidth="2" />
-                <line x1="175" y1="135" x2="160" y2="120" stroke="#ef4444" strokeWidth="2" />
-                <line x1="160" y1="120" x2="165" y2="115" stroke="#ef4444" strokeWidth="1.5" />
+            <motion.g initial={{ rotate: 0 }} animate={{ rotate: -50 }}
+                transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+                style={{ transformOrigin: "155px 132px" }}>
+                <circle cx="140" cy="132" r="11" fill="none" stroke="#dc2626" strokeWidth="2.5" />
+                <circle cx="172" cy="132" r="11" fill="none" stroke="#dc2626" strokeWidth="2.5" />
+                <line x1="140" y1="132" x2="156" y2="118" stroke="#ef4444" strokeWidth="2.5" />
+                <line x1="172" y1="132" x2="156" y2="118" stroke="#ef4444" strokeWidth="2.5" />
+                <line x1="156" y1="118" x2="160" y2="112" stroke="#78716c" strokeWidth="2" strokeLinecap="round" />
+                <ellipse cx="150" cy="118" rx="4" ry="2" fill="#292524" />
             </motion.g>
 
-            {/* Fallen rider on ground */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-            >
-                <circle cx="200" cy="138" r="5" fill="#78716c" />
-                {/* Body on ground */}
-                <line x1="200" y1="143" x2="218" y2="140" stroke="#78716c" strokeWidth="2.5" strokeLinecap="round" />
-                {/* Legs */}
-                <line x1="218" y1="140" x2="225" y2="148" stroke="#78716c" strokeWidth="2" strokeLinecap="round" />
-                <line x1="218" y1="140" x2="228" y2="138" stroke="#78716c" strokeWidth="2" strokeLinecap="round" />
-                {/* Bleeding scrape */}
-                <motion.circle
-                    cx="222" cy="144" r="2" fill="#ef4444"
-                    animate={{ r: [2, 3, 2] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                />
+            {/* Fallen rider */}
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                <circle cx="198" cy="136" r="5.5" fill="#f5d0b0" />
+                <path d="M198,141 L218,138" stroke="#57534e" strokeWidth="3" strokeLinecap="round" />
+                <path d="M218,138 L226,148" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M218,138 L230,136" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" />
+                <motion.circle cx="224" cy="142" r="2.5" fill="#ef4444" opacity={0.7}
+                    animate={{ r: [2.5, 3.5, 2.5] }}
+                    transition={{ duration: 2, repeat: Infinity }} />
             </motion.g>
 
             {/* Scattered packages */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-            >
-                <rect x="230" y="133" width="10" height="8" rx="1" fill="#fbbf24" transform="rotate(20, 235, 137)" />
-                <rect x="245" y="136" width="8" height="6" rx="1" fill="#f97316" transform="rotate(-15, 249, 139)" />
-                <rect x="215" y="147" width="12" height="7" rx="1" fill="#a78bfa" transform="rotate(10, 221, 150)" />
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+                <rect x="235" y="130" width="12" height="9" rx="1.5" fill="#fbbf24" transform="rotate(22, 241, 134)" />
+                <rect x="252" y="135" width="9" height="7" rx="1" fill="#f97316" transform="rotate(-18, 256, 138)" />
+                <rect x="218" y="148" width="14" height="8" rx="1.5" fill="#a78bfa" transform="rotate(12, 225, 152)" />
             </motion.g>
 
-            {/* Cars swerving past */}
-            <motion.g
-                animate={{ x: [-100, 500] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: 1 }}
-            >
-                <rect x="0" y="128" width="30" height="14" rx="4" fill="#44403c" />
-                <rect x="3" y="130" width="8" height="6" rx="1" fill="#bfdbfe" />
-                <rect x="19" y="130" width="8" height="6" rx="1" fill="#bfdbfe" />
+            {/* Passing car */}
+            <motion.g animate={{ x: [-120, 520] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "linear", delay: 1.5 }}>
+                <rect x="0" y="122" width="40" height="16" rx="5" fill="#1e293b" />
+                <rect x="5" y="116" width="30" height="8" rx="3" fill="#1e293b" />
+                <rect x="8" y="117" width="10" height="6" rx="1.5" fill="#bfdbfe" opacity={0.7} />
+                <rect x="22" y="117" width="10" height="6" rx="1.5" fill="#bfdbfe" opacity={0.7} />
+                <rect x="38" y="126" width="3" height="4" rx="1" fill="#fde68a" />
+                <circle cx="10" cy="140" r="4" fill="#0f172a" />
+                <circle cx="30" cy="140" r="4" fill="#0f172a" />
             </motion.g>
 
-            {/* Pedestrians walking past on sidewalk implied */}
-            <motion.g
-                animate={{ x: [0, 50] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            >
-                <Person x={320} y={118} fill="#a8a29e" delay={1} scale={0.7} />
-            </motion.g>
+            {/* You */}
+            <FlatPerson x={320} y={118} shirtColor="#4f46e5" hairColor="#1e293b" delay={0.8}
+                label="YOU" labelColor="#4f46e5" />
 
-            {/* Streetlight */}
-            <rect x="100" y="50" width="3" height="70" fill="#64748b" />
-            <motion.circle
-                cx="101" cy="48" r="6" fill="#fbbf24" opacity={0.6}
-                animate={{ opacity: [0.4, 0.7, 0.4] }}
-                transition={{ duration: 3, repeat: Infinity }}
-            />
-
-            <text x="350" y="170" textAnchor="end" fill="#94a3b8" fontSize="8" fontWeight="600" letterSpacing="0.1em">WET ROAD · DUSK</text>
+            <text x="380" y="172" textAnchor="end" fill="#94a3b8" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>WET ROAD · DUSK</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Scene 8: Community Meeting
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   SCENE 8 — Community Meeting
+   ══════════════════════════════════════════════ */
 function CommunityMeetingScene() {
     return (
         <svg viewBox="0 0 400 180" className="w-full h-full">
             <defs>
-                <linearGradient id="meeting-bg" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="cm-bg" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#e0e7ff" />
                     <stop offset="100%" stopColor="#eef2ff" />
                 </linearGradient>
             </defs>
-            <rect width="400" height="180" fill="url(#meeting-bg)" />
+            <rect width="400" height="180" fill="url(#cm-bg)" />
 
             {/* Hall interior */}
-            <rect x="10" y="20" width="380" height="140" rx="6" fill="#f5f5f4" stroke="#e7e5e4" strokeWidth="1.5" />
+            <rect x="8" y="16" width="384" height="148" rx="8" fill="#fafaf9" stroke="#e7e5e4" strokeWidth="1.5" />
+            {/* Floor */}
+            <rect x="8" y="140" width="384" height="24" rx="0" fill="#e7e5e4" />
 
             {/* Whiteboard at front */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-            >
-                <rect x="150" y="30" width="100" height="50" rx="3" fill="white" stroke="#d6d3d1" strokeWidth="1.5" />
-                <text x="200" y="50" textAnchor="middle" fill="#ef4444" fontSize="7" fontWeight="700">PROPOSAL</text>
-                <text x="200" y="62" textAnchor="middle" fill="#57534e" fontSize="5">Garden → Parking</text>
-                <line x1="165" y1="70" x2="235" y2="70" stroke="#ef4444" strokeWidth="0.8" opacity={0.5} />
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}>
+                <rect x="140" y="26" width="120" height="55" rx="4" fill="white" stroke="#d6d3d1" strokeWidth="2" />
+                {/* Whiteboard tray */}
+                <rect x="140" y="81" width="120" height="4" rx="1" fill="#a8a29e" />
+                {/* Content */}
+                <text x="200" y="44" textAnchor="middle" fill="#ef4444" fontSize="7" fontWeight="800" letterSpacing="0.05em">PROPOSAL</text>
+                <line x1="160" y1="49" x2="240" y2="49" stroke="#e7e5e4" strokeWidth="0.5" />
+                <text x="200" y="60" textAnchor="middle" fill="#57534e" fontSize="5.5">Community Garden</text>
+                <text x="200" y="68" textAnchor="middle" fill="#ef4444" fontSize="5.5" fontWeight="700">→ Parking Lot</text>
+                {/* Markers in tray */}
+                <rect x="155" y="82" width="8" height="2" rx="0.5" fill="#ef4444" />
+                <rect x="166" y="82" width="8" height="2" rx="0.5" fill="#3b82f6" />
             </motion.g>
 
-            {/* Rows of seated people */}
-            {/* Row 1 - front */}
-            {[80, 110, 140, 170, 200, 230, 260, 290].map((x, i) => (
-                <motion.g
-                    key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 + i * 0.05 }}
-                >
-                    <rect x={x - 8} y="100" width="16" height="10" rx="2" fill="#d6d3d1" />
-                    <circle cx={x} cy="93" r="4" fill={i === 3 ? "#4f46e5" : i < 2 ? "#a8a29e" : "#78716c"} />
-                </motion.g>
-            ))}
-            {/* Row 2 - back */}
-            {[95, 125, 155, 185, 215, 245, 275].map((x, i) => (
-                <motion.g
-                    key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 + i * 0.05 }}
-                >
-                    <rect x={x - 8} y="125" width="16" height="10" rx="2" fill="#d6d3d1" />
-                    <circle cx={x} cy="118" r="3.5" fill={i > 4 ? "#92400e" : "#a8a29e"} />
+            {/* Rows of chairs with people */}
+            {/* Row 1 — front */}
+            {[65, 95, 125, 155, 185, 215, 245, 275, 305, 335].map((cx, i) => (
+                <motion.g key={`r1-${i}`}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 + i * 0.04 }}>
+                    {/* Chair */}
+                    <rect x={cx - 9} y="102" width="18" height="12" rx="2" fill="#d6d3d1" stroke="#a8a29e" strokeWidth="0.5" />
+                    <rect x={cx - 7} y="95" width="2" height="8" fill="#a8a29e" />
+                    <rect x={cx + 5} y="95" width="2" height="8" fill="#a8a29e" />
+                    {/* Person head */}
+                    <circle cx={cx} cy="90" r="4.5"
+                        fill={i === 4 ? "#4f46e5" : ["#78716c", "#57534e", "#a8a29e", "#64748b", "#78716c", "#94a3b8", "#57534e", "#78716c", "#a8a29e"][i] || "#78716c"} />
+                    {/* Hair */}
+                    <path d={`M${cx - 4},${88} Q${cx},${84} ${cx + 4},${88}`}
+                        fill={i === 4 ? "#1e293b" : ["#44403c", "#292524", "#78350f", "#44403c", "#1e293b", "#292524", "#57534e", "#44403c", "#78350f"][i] || "#44403c"} />
+                    {/* Shoulders */}
+                    <rect x={cx - 6} y="94" width="12" height="5" rx="2"
+                        fill={i === 4 ? "#4f46e5" : ["#78716c", "#57534e", "#a8a29e", "#64748b", "#78716c", "#94a3b8", "#57534e", "#78716c", "#a8a29e"][i] || "#78716c"} />
                 </motion.g>
             ))}
 
-            {/* Elderly residents - smaller, in back */}
-            <motion.text
-                x="270" y="115" fontSize="6" fill="#92400e"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity }}
-            >😟</motion.text>
+            {/* "YOU" label */}
+            <text x="185" y="78" textAnchor="middle" fill="#4f46e5" fontSize="5" fontWeight="700">YOU</text>
+
+            {/* Row 2 — back */}
+            {[80, 110, 140, 170, 200, 230, 260, 290, 320].map((cx, i) => (
+                <motion.g key={`r2-${i}`}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 + i * 0.04 }}>
+                    <rect x={cx - 9} y="128" width="18" height="12" rx="2" fill="#d6d3d1" stroke="#a8a29e" strokeWidth="0.5" />
+                    <circle cx={cx} cy="118" r="4"
+                        fill={i >= 7 ? "#92400e" : "#a8a29e"} />
+                    <rect x={cx - 5} y="122" width="10" height="4" rx="1.5"
+                        fill={i >= 7 ? "#92400e" : "#a8a29e"} />
+                </motion.g>
+            ))}
+
+            {/* Elderly worried emoji */}
+            <motion.text x="316" y="112" fontSize="7"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity }}>😟</motion.text>
 
             {/* Window showing garden outside */}
-            <rect x="330" y="35" width="40" height="50" rx="3" fill="#86efac" opacity={0.6} stroke="#d6d3d1" strokeWidth="1" />
-            {/* Tree in garden */}
-            <rect x="346" y="50" width="3" height="15" fill="#92400e" />
-            <circle cx="347" cy="45" r="8" fill="#22c55e" opacity={0.8} />
+            <g>
+                <rect x="340" y="30" width="40" height="50" rx="3" fill="#86efac" opacity={0.5} stroke="#d6d3d1" strokeWidth="1" />
+                {/* Tree */}
+                <rect x="356" y="48" width="3" height="14" fill="#78350f" />
+                <circle cx="357" cy="42" r="9" fill="#22c55e" opacity={0.8} />
+                <circle cx="352" cy="46" r="6" fill="#16a34a" opacity={0.6} />
+                {/* Flowers */}
+                <circle cx="348" y="68" r="2" fill="#f472b6" />
+                <circle cx="366" y="68" r="2" fill="#fbbf24" />
+            </g>
 
             {/* Children at window */}
-            <motion.g
-                animate={{ y: [0, -2, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-            >
-                <circle cx="337" cy="80" r="3" fill="#f472b6" />
-                <circle cx="345" cy="82" r="3" fill="#60a5fa" />
+            <motion.g animate={{ y: [0, -2, 0] }} transition={{ duration: 2.5, repeat: Infinity }}>
+                <circle cx="345" cy="76" r="3.5" fill="#f472b6" />
+                <circle cx="355" cy="78" r="3.5" fill="#60a5fa" />
+                {/* Tiny hands on windowsill */}
+                <rect x="342" y="79" width="5" height="2" rx="0.5" fill="#f5d0b0" />
+                <rect x="352" y="80" width="5" height="2" rx="0.5" fill="#f5d0b0" />
             </motion.g>
 
-            {/* Speaker at front standing */}
-            <Person x={200} y={88} fill="#57534e" delay={0.3} scale={0.9} />
+            {/* Speaker standing at front */}
+            <FlatPerson x={50} y={108} shirtColor="#334155" hairColor="#1e293b" delay={0.2} scale={0.85} armPose="hold" />
 
-            <text x="365" y="170" textAnchor="end" fill="#a5b4fc" fontSize="8" fontWeight="600" letterSpacing="0.1em">COMMUNITY HALL</text>
+            <text x="375" y="172" textAnchor="end" fill="#a5b4fc" fontSize="7" fontWeight="600"
+                letterSpacing="0.12em" opacity={0.7}>COMMUNITY HALL</text>
         </svg>
     );
 }
 
-/* ─────────────────────────────────────────────
-   Main Component
-   ───────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════
+   MAIN EXPORT
+   ══════════════════════════════════════════════ */
 const sceneComponents: Record<string, React.ComponentType> = {
     "queue-railway": QueueRailwayScene,
     "loud-phone": LoudPhoneScene,
