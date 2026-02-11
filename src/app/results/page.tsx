@@ -13,6 +13,7 @@ import JourneyTimeline from "@/components/JourneyTimeline";
 import MetricsPanel from "@/components/MetricsPanel";
 import ParticleBackground from "@/components/ParticleBackground";
 import ShareModal from "@/components/ShareModal";
+import { useSound } from "@/hooks/useSound";
 import confetti from "canvas-confetti";
 
 export default function ResultsPage() {
@@ -25,9 +26,12 @@ export default function ResultsPage() {
     [metrics, worldState, choiceHistory]
   );
 
-  // Celebration confetti on mount
+  const { playCelebration } = useSound();
+
+  // Celebration confetti + sound on mount
   useEffect(() => {
     const timer = setTimeout(() => {
+      playCelebration();
       confetti({
         particleCount: 80,
         spread: 100,
@@ -36,6 +40,7 @@ export default function ResultsPage() {
       });
     }, 800);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [showShareModal, setShowShareModal] = useState(false);

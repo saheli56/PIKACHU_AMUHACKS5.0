@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SimulationProvider } from "@/context/SimulationContext";
+import SoundToggle from "@/components/SoundToggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SimulationProvider>{children}</SimulationProvider>
+        <SimulationProvider>
+          {children}
+          <SoundToggle />
+        </SimulationProvider>
       </body>
     </html>
   );

@@ -12,6 +12,7 @@ import MetricsPanel from "@/components/MetricsPanel";
 import MetricDelta from "@/components/MetricDelta";
 import MilestonePopup from "@/components/MilestonePopup";
 import ParticleBackground from "@/components/ParticleBackground";
+import { useSound } from "@/hooks/useSound";
 
 // Scenario-specific gradient classes for atmospheric backgrounds
 const scenarioGradients: Record<string, string> = {
@@ -35,6 +36,7 @@ export default function SimulationPage() {
     handleChoice,
     goToNextScenario,
   } = useSimulation();
+  const { playChoiceSelect, playConsequenceReveal, playSceneTransition, playMilestone } = useSound();
 
   const [showConsequence, setShowConsequence] = useState(false);
   const [currentConsequence, setCurrentConsequence] = useState("");
@@ -49,9 +51,11 @@ export default function SimulationPage() {
   useEffect(() => {
     if (isComplete) {
       // Show completion milestone before navigating
+      playMilestone();
       setMilestoneType("complete");
       setShowMilestone(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isComplete]);
 
   const currentScenario = scenarios[currentScenarioIndex];
@@ -69,13 +73,20 @@ export default function SimulationPage() {
     setLastImpact(choice.impact);
     handleChoice(choice.id, choice.text, choice.impact, choice.consequence);
 
+    // Sound: choice confirmation
+    playChoiceSelect();
+
     // Show delta badges
     setTimeout(() => {
       setShowDelta(true);
     }, 200);
 
-    // Then show consequence card
+    // Then show consequence card with mood-appropriate sound
     setTimeout(() => {
+      const vals = Object.values(choice.impact).filter((v) => v !== undefined) as number[];
+      const sum = vals.reduce((a, b) => a + b, 0);
+      const mood = sum > 10 ? "positive" : sum < -5 ? "negative" : "neutral";
+      playConsequenceReveal(mood);
       setCurrentConsequence(choice.consequence);
       setShowConsequence(true);
     }, 600);
@@ -86,11 +97,14 @@ export default function SimulationPage() {
 
     // Check for halfway milestone (after scenario 4, index 3)
     if (nextIndex === 4) {
+      playMilestone();
       setMilestoneType("halfway");
       setShowMilestone(true);
       return;
     }
 
+    // Sound: scene transition whoosh
+    playSceneTransition();
     advanceToNext();
   };
 
@@ -135,10 +149,10 @@ export default function SimulationPage() {
               >
                 <motion.div
                   className={`h-full rounded-full ${i < currentScenarioIndex
-                      ? "bg-indigo-500"
-                      : i === currentScenarioIndex
-                        ? "bg-indigo-400"
-                        : "bg-transparent"
+                    ? "bg-indigo-500"
+                    : i === currentScenarioIndex
+                      ? "bg-indigo-400"
+                      : "bg-transparent"
                     }`}
                   initial={{ width: 0 }}
                   animate={{
