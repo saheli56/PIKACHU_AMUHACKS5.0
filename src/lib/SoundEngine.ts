@@ -20,7 +20,7 @@
 class SoundEngine {
     private ctx: AudioContext | null = null;
     private _enabled = true;
-    private _volume = 0.5;
+    private _volume = 1;
 
     /** Lazy-init AudioContext (must be triggered by user gesture) */
     private getCtx(): AudioContext {
